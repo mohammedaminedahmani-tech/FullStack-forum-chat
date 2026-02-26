@@ -46,7 +46,8 @@ const ChatGlobalContainer = () => {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {globalMessages.map((message) => {
-  const isOwnMessage = message.senderId._id === authUser._id;
+  const senderId = typeof message.senderId === "object" ? message.senderId._id : message.senderId;
+  const isOwnMessage = senderId === authUser._id;
   const senderName = isOwnMessage ? "Vous" : message.senderId.fullName || "Utilisateur";
   const senderPic = isOwnMessage
     ? authUser.profilePic || "/avatar.png"
