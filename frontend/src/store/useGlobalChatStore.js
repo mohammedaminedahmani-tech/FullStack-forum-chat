@@ -29,22 +29,25 @@ export const useGlobalChatStore = create((set, get) => ({
   },
 
   subscribeToGlobalMessages: () => {
-    const socket = useAuthStore.getState().socket;
-    if (!socket) return;
+  const userId = sessionStorage.getItem("user_id");
+  const socket = useAuthStore.getState().socket;
 
-    // éviter double subscription
-    socket.off("newGlobalMessage");
+  socket.off("newGlobalMessage"); // ✅ évite double écoute
 
-    socket.on("newGlobalMessage", (newMessage) => {
-      set((state) => {
-        // ✅ dédoublonnage (évite double message)
-        if (state.globalMessages.some((m) => m._id === newMessage._id)) {
-          return state;
-        }
-        return { globalMessages: [...state.globalMessages, newMessage] };
-      });
-    });
-  },
+  socket.on("newGlobalMessage", (newMessage) => {
+    const senderId =
+      typeof newMessage.senderId === "object"
+        ? newMessage.senderId._id
+        : newMessage.senderId;
+
+    // ✅ ne pas ignorer ton propre message ici (sinon tu perds le populate parfois)
+    // On laisse le store ajouter tous les messages, mais on évite le doublon:
+    const exists = get().globalMessages.some((m) => m._id === newMessage._id);
+    if (exists) return;
+
+    set({ globalMessages: [...get().globalMessages, newMessage] });
+  });
+},
 
   unsubscribeFromGlobalMessages: () => {
     const socket = useAuthStore.getState().socket;

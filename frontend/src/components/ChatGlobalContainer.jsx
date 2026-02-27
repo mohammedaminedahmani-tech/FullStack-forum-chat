@@ -52,8 +52,8 @@ const ChatGlobalContainer = () => {
   ? "Vous"
   : message.senderId?.username || "Utilisateur";
   const senderPic = isOwnMessage
-    ? authUser.profilePic || "/avatar.png"
-    : message.senderId.profilePic || "/avatar.png";
+  ? authUser.profilePic || "/avatar.png"
+  : message.senderId?.profilePic || "/avatar.png";
 
   return (
     <div
