@@ -45,50 +45,59 @@ const ChatGlobalContainer = () => {
       <ChatGlobalHeader />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      {globalMessages.map((message) => {
-  const senderId = typeof message.senderId === "object" ? message.senderId._id : message.senderId;
-  const isOwnMessage = senderId === authUser._id;
-  const senderName = isOwnMessage
-  ? "Vous"
-  : message.senderId?.username || "Utilisateur";
-  const senderPic = isOwnMessage
-  ? authUser.profilePic || "/avatar.png"
-  : message.senderId?.profilePic || "/avatar.png";
+        {globalMessages.map((message) => {
+          // Extraction sécurisée du sender (grâce au .populate du backend)
+          const sender = message.senderId;
+          
+          // Comparaison d'ID robuste (conversion en String pour éviter les bugs MongoDB/JS)
+          const messageSenderId = typeof sender === "object" ? sender?._id?.toString() : sender?.toString();
+          const currentUserId = authUser?._id?.toString();
+          
+          const isOwnMessage = messageSenderId === currentUserId;
 
-  return (
-    <div
-      key={message._id}
-      className={`chat ${isOwnMessage ? "chat-end" : "chat-start"}`}
-      ref={messageEndRef}
-    >
-      <div className="chat-image avatar">
-        <div className="size-10 rounded-full border">
-          <img src={senderPic} alt="profile pic" />
-        </div>
-      </div>
+          // Détermination du nom à afficher
+          const senderName = isOwnMessage
+            ? "Vous"
+            : sender?.username || "Utilisateur";
 
-      {/* ✅ Affichage du nom + heure */}
-      <div className="chat-header mb-1 font-semibold text-sm">
-        {senderName}
-        <time className="text-xs opacity-50 ml-2">
-          {formatMessageTime(message.createdAt)}
-        </time>
-      </div>
+          // Détermination de la photo à afficher
+          const senderPic = isOwnMessage
+            ? authUser.profilePic || "/avatar.png"
+            : sender?.profilePic || "/avatar.png";
 
-      <div className="chat-bubble flex flex-col">
-        {message.image && (
-          <img
-            src={message.image}
-            alt="Attachment"
-            className="sm:max-w-[200px] rounded-md mb-2"
-          />
-        )}
-        {message.text && <p>{message.text}</p>}
-      </div>
-    </div>
-  );
-})}
+          return (
+            <div
+              key={message._id}
+              className={`chat ${isOwnMessage ? "chat-end" : "chat-start"}`}
+              ref={messageEndRef}
+            >
+              <div className="chat-image avatar">
+                <div className="size-10 rounded-full border">
+                  <img src={senderPic} alt="profile pic" />
+                </div>
+              </div>
 
+              {/* ✅ Affichage correct du nom dynamique */}
+              <div className="chat-header mb-1 font-semibold text-sm">
+                {senderName}
+                <time className="text-xs opacity-50 ml-2">
+                  {formatMessageTime(message.createdAt)}
+                </time>
+              </div>
+
+              <div className="chat-bubble flex flex-col">
+                {message.image && (
+                  <img
+                    src={message.image}
+                    alt="Attachment"
+                    className="sm:max-w-[200px] rounded-md mb-2"
+                  />
+                )}
+                {message.text && <p>{message.text}</p>}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <GlobalMessageInput />
