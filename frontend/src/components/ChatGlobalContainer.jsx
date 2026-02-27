@@ -48,7 +48,9 @@ const ChatGlobalContainer = () => {
       {globalMessages.map((message) => {
   const senderId = typeof message.senderId === "object" ? message.senderId._id : message.senderId;
   const isOwnMessage = senderId === authUser._id;
-  const senderName = isOwnMessage ? "Vous" : message.senderId.fullName || "Utilisateur";
+  const senderName = isOwnMessage
+  ? "Vous"
+  : message.senderId?.username || "Utilisateur";
   const senderPic = isOwnMessage
     ? authUser.profilePic || "/avatar.png"
     : message.senderId.profilePic || "/avatar.png";
